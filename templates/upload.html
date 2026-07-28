@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Upload - RiceNetX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #C8DBCE;
+            padding: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: rgb(251, 246, 246);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .header p {
+            color: rgba(251, 246, 246, 0.9);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .upload-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #C8DBCE, #9b8ee0);
+        }
+        
+        .upload-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            border-color: #C8DBCE;
+        }
+        
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+        
+        .file-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            background-color: #fafafa;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-input:hover {
+            border-color: #C8DBCE;
+            background-color: rgba(200, 219, 206, 0.05);
+        }
+        
+        .file-input:focus {
+            outline: none;
+            border-color: #C8DBCE;
+            box-shadow: 0 0 0 3px rgba(200, 219, 206, 0.1);
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #C8DBCE 0%, #B8CAB8 100%);
+            color: #333;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(200, 219, 206, 0.3);
+        }
+        
+        .upload-btn:hover {
+            background: linear-gradient(135deg, #B8CAB8 0%, #C8DBCE 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 219, 206, 0.4);
+        }
+        
+        .upload-btn:active {
+            transform: translateY(0);
+        }
+        
+        .file-types {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #C8DBCE;
+        }
+        
+        .file-types h4 {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .file-types ul {
+            list-style: none;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .file-types li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .file-types li::before {
+            content: '• ';
+            color: #C8DBCE;
+            font-weight: bold;
+        }
+        
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .progress-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #C8DBCE, #9b8ee0);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        .footer p {
+            margin: 0;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+            
+            .upload-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .upload-card {
+                padding: 2rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Data Upload Center</h1>
+        <p>Upload your rice gene data files to RiceNetX</p>
+    </header>
+    
+    <div class="container">
+        <div class="upload-grid">
+            <!-- Gene Expression Data Upload -->
+            <div class="upload-card">
+                <div class="card-header">
+                    <div class="card-icon">🧬</div>
+                    <h2 class="card-title">Gene Expression Data</h2>
+                    <p class="card-subtitle">Upload RNA-seq expression data</p>
+                </div>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="file1">Choose Expression Data File:</label>
+                        <input type="file" id="file1" name="file" class="file-input" accept=".csv,.txt,.tsv">
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        📤 Upload Expression Data
+                    </button>
+                    <div class="file-types">
+                        <h4>Supported formats:</h4>
+                        <ul>
+                            <li>CSV files (.csv)</li>
+                            <li>Tab-separated values (.tsv)</li>
+                            <li>Text files (.txt)</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Metadata Upload -->
+            <div class="upload-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h2 class="card-title">Metadata</h2>
+                    <p class="card-subtitle">Upload sample metadata</p>
+                </div>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="file2">Choose Metadata File:</label>
+                        <input type="file" id="file2" name="file2" class="file-input" accept=".csv,.txt,.tsv">
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        📤 Upload Metadata
+                    </button>
+                    <div class="file-types">
+                        <h4>Metadata should include:</h4>
+                        <ul>
+                            <li>Sample IDs</li>
+                            <li>Tissue types</li>
+                            <li>Treatment conditions</li>
+                            <li>Growth stages</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Pfam Annotations Upload -->
+            <div class="upload-card">
+                <div class="card-header">
+                    <div class="card-icon">🏷️</div>
+                    <h2 class="card-title">Pfam Annotations</h2>
+                    <p class="card-subtitle">Upload functional domain data</p>
+                </div>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="file3">Choose Pfam File:</label>
+                        <input type="file" id="file3" name="file3" class="file-input" accept=".csv,.txt,.tsv">
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        📤 Upload Pfam Data
+                    </button>
+                    <div class="file-types">
+                        <h4>Pfam data should contain:</h4>
+                        <ul>
+                            <li>Gene IDs</li>
+                            <li>Pfam accessions</li>
+                            <li>Domain descriptions</li>
+                            <li>E-values</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Gene Ontology Upload -->
+            <div class="upload-card">
+                <div class="card-header">
+                    <div class="card-icon">🔬</div>
+                    <h2 class="card-title">Gene Ontology</h2>
+                    <p class="card-subtitle">Upload GO annotations</p>
+                </div>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="file4">Choose GO File:</label>
+                        <input type="file" id="file4" name="file4" class="file-input" accept=".csv,.txt,.tsv">
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        📤 Upload GO Data
+                    </button>
+                    <div class="file-types">
+                        <h4>GO data should include:</h4>
+                        <ul>
+                            <li>Gene identifiers</li>
+                            <li>GO term IDs</li>
+                            <li>GO categories (BP, MF, CC)</li>
+                            <li>Term descriptions</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Upload Progress Section -->
+        <div class="progress-section">
+            <h3 class="progress-title">Upload Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">Ready to upload files...</p>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>&copy; 2024 RiceNetX. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // File upload progress simulation
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                progressText.textContent = 'Uploading file...';
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+                    
+                    progressFill.style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        progressText.textContent = 'Upload complete!';
+                        setTimeout(() => {
+                            progressFill.style.width = '0%';
+                            progressText.textContent = 'Ready to upload files...';
+                        }, 2000);
+                    }
+                }, 200);
+            });
+        });
+        
+        // File input styling
+        document.querySelectorAll('.file-input').forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    this.style.borderColor = '#C8DBCE';
+                    this.style.backgroundColor = 'rgba(200, 219, 206, 0.1)';
+                } else {
+                    this.style.borderColor = '#ddd';
+                    this.style.backgroundColor = '#fafafa';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

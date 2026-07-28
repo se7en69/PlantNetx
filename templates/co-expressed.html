@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Gene Search - RiceFREND</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+    <link rel="stylesheet" href="/static/single-gene.css">
+    <script src="/static/single-gene.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="search-sidebar">
+            <h2>SINGLE GENE</h2>
+            <div class="search-tabs">
+                <a href="/sgsearch" class="tab active">SINGLE GENE</a>
+                <a href="/mgsearch" class="tab">MULTIPLE GENES</a>
+            </div>
+            <form id="gene-search-form">
+                <div class="search-form">
+                    <label for="gene-id">Enter a gene ID:</label>
+                    <input type="text" id="gene-id" name="gene-id" placeholder="e.g., LOC_Os01g01030">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+            <a href="#" class="example-link">Example</a>
+            <h2>RESULTS</h2>
+        </aside>
+
+        <main class="main-content">
+            <section class="getting-started">
+                <h1>
+                    <span class="info-icon">i</span>
+                    Getting Started
+                </h1>
+                
+                <div class="architecture-diagram" id="architecture-diagram">
+                    <h2>INFORMATION ARCHITECTURE</h2>
+                    <div class="diagram-content">
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>SEARCH</h3>
+                                <div>Single gene</div>
+                                <div>Multiple genes</div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>DATA TABLE</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Basic information</h3>
+                                <div>Expression overview</div>
+                                <div>Top co-expressed genes</div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>EXPRESSION</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Scatter plot for the expression of the two selected genes</h3>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>NETWORK</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Co-expression network of the selected gene</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/single-gene.js"></script>
+</body>
+</html>

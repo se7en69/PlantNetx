@@ -1,0 +1,1493 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantNetX - Rice networks explorer</title>
+    <link rel="icon" href="{% static 'fav.png' %}" type="image/png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+	<script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    }
+
+    body {
+        background-color: #f5f5f5;
+        min-height: 100vh;
+    }
+
+    .container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .search-sidebar {
+        width: 300px;
+        background-color: #4a4a4a;
+        color: white;
+        padding: 20px;
+        height: 100vh; /* Full viewport height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        position: sticky; /* Keep the sidebar fixed while scrolling */
+        top: 0; /* Stick to the top */
+    }
+
+    .result-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .result-btn {
+        padding: 10px;
+        background: #666;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.3s ease;
+    }
+
+    .result-btn:hover {
+        background: #C8DBCE;
+    }
+    .hidden {
+        display: none !important;
+    }
+
+    .search-sidebar h2 {
+        color: #C8DBCE;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #666;
+        font-size: 1.5em;
+    }
+
+    .search-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    #heatmap-container {
+        width: 100%;
+        height: 500px;
+        margin-top: 20px;
+    }
+    .tab {
+        padding: 12px 20px;
+        background-color: #666;
+        color: white;
+        cursor: pointer;
+        text-decoration: none;
+        flex: 1;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 0.9em;
+    }
+
+    .tab:hover {
+        background-color: #777;
+    }
+
+    .tab.active {
+        background-color: #C8DBCE;
+        color: black;
+        font-weight: bold;
+    }
+
+    .search-form {
+        margin-bottom: 20px;
+    }
+
+    .search-form label {
+        display: block;
+        margin-bottom: 10px;
+        color: white;
+        font-size: 0.9em;
+    }
+
+    .search-form input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+
+    .search-form button {
+        padding: 10px 25px;
+        background-color: #C8DBCE;
+        color: black;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+        font-weight: bold;
+        transition: background-color 0.3s;
+    }
+
+    .search-form button:hover {
+        background-color: #C8DBCE;
+    }
+
+    .example-link {
+        color: #C8DBCE;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 15px;
+        font-size: 0.9em;
+    }
+
+    .example-link:hover {
+        text-decoration: underline;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        background-color: white;
+    }
+
+    .getting-started {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .getting-started h1 {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        font-size: 2em;
+        color: #333;
+    }
+
+    .info-icon {
+        width: 32px;
+        height: 32px;
+        background-color: #666;
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-style: italic;
+    }
+
+    .architecture-diagram {
+        border: 1px solid #ddd;
+        padding: 30px;
+        margin-top: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .architecture-diagram h2 {
+        margin-bottom: 25px;
+        color: #333;
+        font-size: 1.5em;
+    }
+
+    .diagram-content {
+        border: 2px solid #C8DBCE;
+        padding: 25px;
+        border-radius: 6px;
+    }
+
+    .diagram-row {
+        display: flex;
+        margin-bottom: 25px;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .diagram-box {
+        border: 1px solid #ddd;
+        padding: 15px;
+        flex: 1;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .diagram-box h3 {
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 1.1em;
+    }
+
+    .diagram-box div {
+        color: #666;
+        margin: 5px 0;
+        font-size: 0.9em;
+    }
+
+    .arrow {
+        text-align: center;
+        color: #C8DBCE;
+        font-size: 24px;
+        margin: 15px 0;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .results-table th, .results-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+        vertical-align: middle;
+    }
+
+    .results-table th {
+        background: linear-gradient(135deg, #4a4a4a 0%, #666 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 0.95em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .results-table th:first-child {
+        border-top-left-radius: 8px;
+    }
+
+    .results-table th:last-child {
+        border-top-right-radius: 8px;
+    }
+
+    .results-table td {
+        background: white;
+        color: #333;
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .results-table tr:hover td {
+        background: #f8f9fa;
+        transition: background-color 0.2s ease;
+    }
+
+    .results-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Alternating row colors for better readability */
+    .results-table tbody tr:nth-child(even) td {
+        background: #fafbfc;
+    }
+
+    .results-table tbody tr:nth-child(even):hover td {
+        background: #f0f2f5;
+    }
+
+    /* Link styling within tables */
+    .results-table a {
+        color: #0066cc;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .results-table a:hover {
+        color: #0052a3;
+        text-decoration: underline;
+    }
+
+    /* Table container styling */
+    .table-container {
+        margin: 20px 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Enhanced table styling */
+    .results-table caption {
+        caption-side: top;
+        text-align: left;
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        padding: 10px 0;
+    }
+
+    /* Better spacing for table sections */
+    .diagram-box .results-table {
+        margin-top: 15px;
+    }
+
+    /* Improved table header styling */
+    .results-table thead {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Table row transitions */
+    .results-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    /* Better focus states for accessibility */
+    .results-table tbody tr:focus-within {
+        outline: 2px solid #C8DBCE;
+        outline-offset: 2px;
+    }
+
+    /* Download button styling */
+    .download-btn {
+        background: linear-gradient(135deg, #4a4a4a 0%, #666 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+        margin: 15px 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .download-btn:hover {
+        background: linear-gradient(135deg, #333 0%, #555 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .download-btn:active {
+        transform: translateY(0);
+    }
+
+    /* Responsive table styles */
+    @media (max-width: 768px) {
+        .results-table {
+            font-size: 0.8em;
+        }
+        
+        .results-table th, .results-table td {
+            padding: 8px 10px;
+        }
+        
+        .results-table {
+            overflow-x: auto;
+            display: block;
+        }
+        
+        .results-table thead, .results-table tbody, .results-table tr, .results-table th, .results-table td {
+            display: block;
+        }
+        
+        .results-table thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+        
+        .results-table tr {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        
+        .results-table td {
+            border: none;
+            position: relative;
+            padding-left: 50%;
+            text-align: left;
+        }
+        
+        .results-table td:before {
+            content: attr(data-label);
+            position: absolute;
+            left: 10px;
+            width: 45%;
+            font-weight: bold;
+            color: #666;
+        }
+    }
+
+    .boxplot {
+        width: 100%;
+        height: 200px;
+        background-color: #f0f0f0;
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .getting-started {
+            max-width: 95%;
+        }
+        
+        .diagram-row {
+            gap: 15px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .search-sidebar {
+            width: 100%;
+            height: auto;
+            position: static;
+            order: 2;
+        }
+
+        .main-content {
+            order: 1;
+            padding: 20px;
+        }
+
+        .diagram-row {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .diagram-box {
+            margin-bottom: 10px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .search-tabs {
+            flex-direction: column;
+        }
+
+        .tab {
+            margin-bottom: 2px;
+        }
+
+        .getting-started h1 {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .architecture-diagram {
+            padding: 20px;
+        }
+
+        .diagram-content {
+            padding: 15px;
+        }
+
+        .diagram-box {
+            width: 100%;
+            margin: 0;
+            text-align: center;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .search-sidebar {
+            padding: 15px;
+        }
+
+        .main-content {
+            padding: 15px;
+        }
+
+        .getting-started h1 {
+            font-size: 1.5em;
+        }
+
+        .info-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        .architecture-diagram {
+            padding: 15px;
+        }
+
+        .diagram-content {
+            padding: 10px;
+        }
+
+        .diagram-box {
+            padding: 10px;
+        }
+
+        .diagram-box h3 {
+            font-size: 1em;
+        }
+
+        .diagram-box div {
+            font-size: 0.8em;
+        }
+
+        .arrow {
+            font-size: 20px;
+        }
+
+        .search-form button {
+            width: 100%;
+            float: none;
+            margin-top: 10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header {
+            height: auto;
+            padding: 15px;
+        }
+
+        .header-logo {
+            height: 60px;
+        }
+
+        .getting-started h1 {
+            font-size: 1.3em;
+        }
+
+        .architecture-diagram {
+            padding: 10px;
+        }
+
+        .diagram-content {
+            padding: 8px;
+        }
+
+        .diagram-box {
+            padding: 8px;
+        }
+    }
+    #network-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            display: none;
+        }
+    .network-button {
+        margin: 10px 0;
+        padding: 8px 16px;
+        background: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .mutual-filter {
+        margin: 10px 0;
+        padding: 8px 16px;
+        background: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .download-btn {
+        margin: 10px 0;
+        padding: 8px 16px;
+        background: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .mutual-filter2 {
+        margin: 10px 0;
+        padding: 8px 16px;
+        background: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .mrank-container {
+    height: 300px;       /* Fixed height for the container */
+    overflow-y: auto;    /* Enable vertical scrolling */
+    border: 1px solid #ccc;
+    }
+    .header {
+        background-color: #C8DBCE;
+        width: 100%;
+        height: 100px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        }
+
+        .header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        }
+
+        .header-logo {
+        width: auto;
+        height: 200px;
+        margin-right: 10px; /* Add some spacing between logo and text */
+        }
+
+        .header h1 {
+        color: white;
+        font-size: 2.5em;
+        }
+
+        .header-dots {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+        z-index: 1;
+        }
+
+        .subheader {
+        background-color: #666;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-dots"></div>
+        <div class="header-content">
+            <a href="/">
+                <img src="{% static 'logo.png' %}" alt="" class="header-logo">
+            </a>
+        </div>
+    </header>
+    <div class="container">
+        <aside class="search-sidebar">
+            <h2>SINGLE GENE</h2>
+            <div class="search-tabs">
+                <a href="/sgsearch" class="tab active">SINGLE GENE</a>
+                <a href="/mgsearch" class="tab">MULTIPLE GENES</a>
+            </div>
+            <form id="gene-search-form">
+                <div class="search-form">
+                    <label for="gene-id">Enter a gene ID:</label>
+                    <input type="text" id="gene-id" name="gene-id" placeholder="e.g., LOC_Os01g01030">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+            
+            <h2>RESULTS</h2>
+            <div class="result-buttons hidden"> <!-- Add hidden class initially -->
+                <button class="result-btn active" data-section="basic-info" onClick='window.location="#basic"'>Basic Info</button>
+                <button class="result-btn" data-section="expression" onClick='window.location="#expression"'>Expression</button>
+                <button class="result-btn" data-section="network" onclick="toggleDiv('network')">Co-expression Network</button>
+                <button class="result-btn" data-section="fnetwork" onclick="toggleDiv('fnetwork')">Functional Network</button>
+                <button class="result-btn" data-section="coexpressed" onclick="toggleDiv('mrank')">Mutual Rank</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="getting-started">
+                <h1>
+                    <span class="info-icon">i</span>
+                    Basic Information
+                </h1>
+                
+                <div class="architecture-diagram" id="architecture-diagram">
+                    <h2>INFORMATION ARCHITECTURE</h2>
+                    <div class="diagram-content">
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>SEARCH</h3>
+                                <div>Single gene</div>
+                                <div>Multiple genes</div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>DATA TABLE</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Basic information</h3>
+                                <div>Expression overview</div>
+                                <div>Top co-expressed genes</div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>EXPRESSION</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Scatter plot for the expression of the two selected genes</h3>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>NETWORK</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Co-expression network of the selected gene</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('gene-search-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
+
+        // Get the gene ID from the input field
+        const geneId = document.getElementById('gene-id').value;
+
+        // Make an AJAX request to the Django view
+        fetch(`https://PlantNetX.academic.kube.ohio.edu/sGene?gene_id=${geneId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('.result-buttons').classList.remove('hidden');
+                // Update the architecture-diagram div with the results
+                const architectureDiagram = document.getElementById('architecture-diagram');
+                architectureDiagram.innerHTML = `
+                    <h2><span class="info-icon">🧬</span> ${geneId} ( ${Array.from(new Map(data.pfam.map(p => [p.Note, p])).values()).map(p => `${p.Note}`).join('')} )</h2>
+                    
+                    <div></div>
+                    <div class="diagram-content">
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="basic">
+                                <h3>PFAM TABLE</h3>
+                                <table id = "basic_info" class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Gene</th>
+                                            <th>mRNA</th>
+                                            <th>Pfam Accession</th>
+                                            <th>Pfam Name</th>
+                                            <th>Pfam Type</th>
+                                            <th>E-value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.pfam.map(pfam => `
+                                            <tr>
+                                                <td>${pfam.Gene}</td>
+                                                <td>${pfam.mRNA}</td>
+                                                <td><a href="https://www.ebi.ac.uk/interpro/entry/pfam/${pfam.Pfma_acc.split('.')[0]}/">${pfam.Pfma_acc}</a></td>
+                                                <td>${pfam.Pfma_name}</td>
+                                                <td>${pfam.Pfma_type}</td>
+                                                <td>${pfam.evalue}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                <button class="result-btn active" data-section="basic-info" onClick="downloadTableAsCSV('basic_info', 'table_data.csv')">Download</button>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="basic">
+                                <h3>Functionally Related Genes</h3>
+                                <div id="mrank-container" class="mrank-container">
+                                    <table id = "basic_info" class="results-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Gene</th>
+                                                <th>mRNA</th>
+                                                <th>Pfam Accession</th>
+                                                <th>Pfam Name</th>
+                                                <th>Note</th>
+                                                <th>Pfam Type</th>
+                                                <th>E-value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.funrelate.map(funrelate => `
+                                                <tr>
+                                                    <td>${funrelate.Gene}</td>
+                                                    <td>${funrelate.mRNA}</td>
+                                                    <td><a href="https://www.ebi.ac.uk/interpro/entry/pfam/${funrelate.Pfma_acc.split('.')[0]}/">${funrelate.Pfma_acc}</a></td>
+                                                    <td>${funrelate.Pfma_name}</td>
+                                                    <td>${funrelate.Note}</td>
+                                                    <td>${funrelate.Pfma_type}</td>
+                                                    <td>${funrelate.evalue}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <button class="result-btn active" data-section="basic-info" onClick="downloadTableAsCSV('basic_info', 'table_data.csv')">Download</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>GO TABLE</h3>
+                                <table id = "geneOnt" class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Gene</th>
+                                            <th>mRNA</th>
+                                            <th>GO Accession</th>
+                                            <th>GO Name</th>
+                                            <th>GO Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.gotable.map(go => `
+                                            <tr>
+                                                <td>${go.Gene}</td>
+                                                <td>${go.mRNA}</td>
+                                                <td>${go.GO_acc}</td>
+                                                <td>${go.GO_name}</td>
+                                                <td>${go.GO_type}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                <button class="result-btn active" data-section="basic-info" onClick="downloadTableAsCSV('geneOnt', 'Gene_ontology.csv')">Download</button>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="expression">
+                                <h3>EXPRESSION BOXPLOT</h3>
+                                <canvas id="myBoxplot"></canvas>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="expression">
+                                <h3>EXPRESSION Heatmap</h3>
+                                <div id="heatmap-container"></div>
+                            </div>
+                        </div>
+
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="network" style="display: none;">
+                                <h3>NETWORK</h3>
+                                <button class="network-button" id="show-network">Show Co-expression Network</button>
+                                <div class="filter-controls">
+                                    <button class="mutual-filter" data-rank="5">Mutual Rank ≤5</button>
+                                    <button class="mutual-filter" data-rank="10">Mutual Rank ≤10</button>
+                                    <button class="mutual-filter" data-rank="15">Mutual Rank ≤15</button>
+                                    <button class="mutual-filter" data-rank="20">Mutual Rank ≤20</button>
+                                    <button class="mutual-filter" data-rank="30">Mutual Rank ≤30</button>
+                                    <button class="mutual-filter" data-rank="100">Mutual Rank >30</button>
+                                    <button class="download-btn" data-content-key="dataset1" data-filename="interactions1.sif">Download Network (.sif)</button>
+                                    <button class="download-btn" id="download-network-gene-notes" data-filename="network_gene_notes.tsv">Download Network Gene Notes (.tsv)</button>
+                                </div>
+                                <div id="network-container"></div>
+                            </div>
+                        </div>
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="fnetwork" style="display: none;">
+                                <h3>FUNCTIONAL NETWORK</h3>
+                                <button class="network-button" id="f-show-network">Functional Co-expression Network</button>
+                                <div class="filter-controls">
+                                    <button class="mutual-filter2" data-rank="5">Mutual Rank ≤5</button>
+                                    <button class="mutual-filter2" data-rank="10">Mutual Rank ≤10</button>
+                                    <button class="mutual-filter2" data-rank="15">Mutual Rank ≤15</button>
+                                    <button class="mutual-filter2" data-rank="20">Mutual Rank ≤20</button>
+                                    <button class="mutual-filter2" data-rank="30">Mutual Rank ≤30</button>
+                                    <button class="mutual-filter2" data-rank="100">Mutual Rank >30</button>
+                                    <button class="download-btn" data-content-key="dataset2" data-filename="interactions2.sif">Download Dataset 1</button>
+                                    <button class="download-btn" id="download-fnetwork-gene-notes" data-filename="fnetwork_gene_notes.tsv">Download FNetwork Gene Notes (.tsv)</button>
+                                </div>
+                                <div id="network-container"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="diagram-row">
+                            <div class="diagram-box" id="mrank" style="display: none;">
+                                <h3>Mutual Rank</h3>
+                                <div id="mrank-container" class="mrank-container">
+                                    <table id = "mutual_rank" class="results-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Query</th>
+                                                <th>Target</th>
+                                                <th>M.Rank</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.mrank.map(rank => `
+                                                <tr>
+                                                    <td>${rank.Gene1}</td>
+                                                    <td>${rank.Gene2}</td>
+                                                    <td>${rank.MRank}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <button class="result-btn active" data-section="basic-info" onClick="downloadTableAsCSV('mutual_rank', 'Mutual_rank.csv')">Download</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                createBoxPlot(data.boxplot);
+
+                renderPlotlyHeatmap(data.fexpression, data.series_names, data.row_sample)
+                console.log(data.series_names)
+                console.log(data.pfam.Pfma_acc)
+                
+                // Add network button functionality
+                let currentCy = null;
+                let originalNetworkData = null;
+                let originalNodesData = null;
+
+                // Modified event listener with filtering
+                document.getElementById('show-network').addEventListener('click', () => {
+                    const container = document.getElementById('network-container');
+                    container.style.display = 'block';
+                    
+                    // Initial render with all data
+                    if (!originalNetworkData) {
+                        originalNetworkData = data.network;
+                        originalNodesData = data.nodes;
+                    }
+                    
+                    renderNetwork(originalNetworkData, originalNodesData);
+                });
+
+                // Add filter button handlers
+                document.querySelectorAll('.mutual-filter').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const maxRank = parseInt(button.dataset.rank);
+                        const filtered = filterByMutualRank(originalNetworkData, originalNodesData, maxRank);
+                        renderNetwork(filtered.edges, filtered.nodes);
+                    });
+                });
+
+                // Add Functional network button functionality
+                let currentCy2 = null;
+                let originalNetworkData2 = null;
+                let originalNodesData2 = null;
+
+                // Modified event listener with filtering
+                document.getElementById('f-show-network').addEventListener('click', () => {
+                    const container = document.getElementById('network-container');
+                    container.style.display = 'block';
+                    
+                    // Initial render with all data
+                    if (!originalNetworkData2) {
+                        originalNetworkData2 = data.fnetwork;
+                        originalNodesData2 = data.fnodes;
+                    }
+                    
+                    renderNetwork(originalNetworkData2, originalNodesData2);
+                });
+
+                // Download Network
+                const contentMap = {
+                    "dataset1": data.cyto,
+                    "dataset2": data.fcyto,
+                };
+                bindDownloadToButtons(".download-btn", contentMap);
+
+                // Add filter button handlers for functional network
+                document.querySelectorAll('.mutual-filter2').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const maxRank = parseInt(button.dataset.rank);
+                        const filtered = filterByMutualRank(originalNetworkData2, originalNodesData2, maxRank);
+                        renderNetwork(filtered.edges, filtered.nodes);
+                    });
+                });
+
+                // Add gene notes download functionality for both networks
+                document.getElementById('download-network-gene-notes').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filename = this.getAttribute('data-filename') || 'network_gene_notes.tsv';
+                    
+                    // Check for gene notes data in various possible locations
+                    let geneNotesData = null;
+                    
+                    if (data.gnote && Array.isArray(data.gnote)) {
+                        geneNotesData = data.gnote;
+                    } else if (data.nodes && Array.isArray(data.nodes)) {
+                        // Extract from nodes if gene notes not available directly
+                        geneNotesData = extractGeneNotesFromNodes(data.nodes);
+                    }
+                    
+                    if (geneNotesData && geneNotesData.length > 0) {
+                        downloadGeneNotes(geneNotesData, filename);
+                    } else {
+                        alert('Gene notes data not available for this network.');
+                    }
+                });
+
+                document.getElementById('download-fnetwork-gene-notes').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filename = this.getAttribute('data-filename') || 'fnetwork_gene_notes.tsv';
+                    
+                    // Check for gene notes data in various possible locations
+                    let geneNotesData = null;
+                    
+                    if (data.fgnote && Array.isArray(data.fgnote)) {
+                        geneNotesData = data.fgnote;
+                    } else if (data.fnodes && Array.isArray(data.fnodes)) {
+                        // Extract from nodes if gene notes not available directly
+                        geneNotesData = extractGeneNotesFromNodes(data.fnodes);
+                    } else if (data.gnote && Array.isArray(data.gnote)) {
+                        // Fallback to general gene notes
+                        geneNotesData = data.gnote;
+                    }
+                    
+                    if (geneNotesData && geneNotesData.length > 0) {
+                        downloadGeneNotes(geneNotesData, filename);
+                    } else {
+                        alert('Gene notes data not available for this functional network.');
+                    }
+                });
+                
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    // Helper function to extract gene notes from nodes
+    function extractGeneNotesFromNodes(nodes) {
+        if (!Array.isArray(nodes)) return [];
+        
+        const geneNotes = [];
+        nodes.forEach(node => {
+            if (node.data && node.data.id) {
+                geneNotes.push({
+                    Gene: node.data.id,
+                    Note: node.data.note || ''
+                });
+            }
+        });
+        return geneNotes;
+    }
+
+    // Gene notes generation function (tab-delimited)
+    function generateGeneNotesContent(geneNotes) {
+        // Create header
+        let notesContent = 'Gene\tNote\n';
+        
+        // Add each gene with its note
+        geneNotes.forEach(gene => {
+            notesContent += `${gene.Gene}\t${gene.Note}\n`;
+        });
+        
+        return notesContent;
+    }
+
+    // Download function for gene notes
+    function downloadGeneNotes(geneNotes, filename = 'gene_notes.tsv') {
+        const content = generateGeneNotesContent(geneNotes);
+        downloadTSV(content, filename);
+    }
+
+    // Generic TSV download function
+    function downloadTSV(content, filename = 'data.tsv') {
+        const blob = new Blob([content], { type: 'text/tab-separated-values' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+        // Download Cytoscape
+        function bindDownloadToButtons(buttonClass, contentMap) {
+            const buttons = document.querySelectorAll(buttonClass);
+            buttons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const key = this.getAttribute('data-content-key');
+                    const content = contentMap[key];
+                    const filename = this.getAttribute('data-filename') || 'download.txt';
+
+                    if (!content) {
+                        console.warn(`No content found for key: ${key}`);
+                        return;
+                    }
+
+                    const blob = new Blob([content], { type: 'text/tab-separated-values' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            });
+        }
+        // Download Table data 
+        function downloadTableAsCSV(tableId, filename) {
+            let table = document.getElementById(tableId);
+            let rows = table.querySelectorAll("tr");
+            let csvContent = "";
+
+            rows.forEach(row => {
+                let cols = row.querySelectorAll("th, td");
+                let rowData = [];
+                cols.forEach(col => rowData.push(`"${col.innerText}"`));
+                csvContent += rowData.join(",") + "\n";
+            });
+
+            let blob = new Blob([csvContent], { type: "text/csv" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+        // Stack bar graph 
+        function renderHeatmap(rankData, xLabels, yLabels) {
+            // Parse data if needed
+            if (typeof rankData === 'string') rankData = JSON.parse(rankData);
+            if (typeof xLabels === 'string') xLabels = JSON.parse(xLabels);
+            if (typeof yLabels === 'string') yLabels = JSON.parse(yLabels);
+
+            // Prepare heatmap data
+            let heatmapData = [];
+            rankData.forEach((row, i) => {
+                row.forEach((value, j) => {
+                    heatmapData.push({
+                        x: xLabels[j],
+                        y: yLabels[i],
+                        heat: value
+                    });
+                });
+            });
+
+            anychart.onDocumentReady(function() {
+                let chart = anychart.heatMap(heatmapData);
+
+                // CORRECT COLOR SCALE AND LEGEND CONFIGURATION
+                var colorScale = anychart.scales.linearColor();
+                colorScale.colors([
+                    '#e6f7ff', // light blue
+                    '#66c2e0', // medium blue
+                    '#006699'  // dark blue
+                ]);
+                
+                // Set min/max based on your data
+                const minValue = Math.min(...rankData.flat());
+                const maxValue = Math.max(...rankData.flat());
+                colorScale.minimum(minValue);
+                colorScale.maximum(maxValue);
+                
+                chart.colorScale(colorScale);
+
+                // PROPER LEGEND CONFIGURATION
+                var legend = chart.legend();
+                legend.enabled(true);
+                legend.itemsFormatter(function() {
+                    return [
+                        {text: 'Low', iconFill: '#e6f7ff'},
+                        {text: 'Medium', iconFill: '#66c2e0'},
+                        {text: 'High', iconFill: '#006699'}
+                    ];
+                });
+
+                // Rest of your chart configuration
+                chart.labels().enabled(false);
+                chart.xAxis()
+                    .labels()
+                    .fontSize(8)  // Smaller font size (default is 12)
+                    .rotation(-90)  // Vertical 90-degree rotation
+                    .hAlign('right')  // Aligns text to the right of tick mark
+                    .vAlign('middle') // Centers vertically
+                    .width(50)     // Maximum label width in pixels
+                    .padding(2);
+                chart.yAxis().staggerMode(true);
+                chart.tooltip().format('{%x}: {%heat}');
+                
+                chart.container('heatmap-container');
+                chart.draw();
+            });
+        }
+        // render heatmap using plotly js
+        function renderPlotlyHeatmap(rankData, xLabels, yLabels, containerId = 'heatmap-container') {
+            // Parse data if strings (Django to JS)
+            if (typeof rankData === 'string') rankData = JSON.parse(rankData);
+            if (typeof xLabels === 'string') xLabels = JSON.parse(xLabels);
+            if (typeof yLabels === 'string') yLabels = JSON.parse(yLabels);
+
+            // Create the heatmap trace
+            const trace = {
+                z: rankData,
+                x: xLabels,
+                y: yLabels,
+                type: 'heatmap',
+                colorscale: [
+                    [0, '#e6f7ff'],  // Light blue (min)
+                    [1, '#006699']   // Dark blue (max)
+                ],
+                hoverongaps: false,
+                showscale: true,  // Show color legend
+                colorbar: {
+                    title: 'Expression',
+                    titleside: 'right'
+                }
+            };
+
+            // Layout configuration
+            const layout = {
+                title: 'Gene Expression Heatmap',
+                xaxis: {
+                    tickangle: -90,  // Rotate x-axis labels 90°
+                    tickfont: {
+                        size: 8  // Smaller font size
+                    },
+                    automargin: true  // Prevents label cutoff
+                },
+                yaxis: {
+                    automargin: true
+                },
+                margin: {
+                    l: 150,  // Left margin (for y-axis labels)
+                    r: 50,   // Right margin
+                    b: 150,  // Bottom margin (for rotated x-axis labels)
+                    t: 50    // Top margin
+                }
+            };
+
+            // Config (disable cell values)
+            const config = {
+                displayModeBar: true,  // Show the toolbar
+                staticPlot: false      // Keep interactivity
+            };
+
+            // Render the plot
+            Plotly.newPlot(
+                document.getElementById(containerId),
+                [trace],
+                layout,
+                config
+            );
+        }
+        function showDiv(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+        function toggleDiv(id) {
+            const element = document.getElementById(id);
+            if (element.style.display === 'none' || element.style.display === '') {
+                element.style.display = 'block';
+            } else {
+                element.style.display = 'none';
+            }
+        }
+        function createBoxPlot(dataObj) {
+            const ctx = document.getElementById('myBoxplot').getContext('2d');
+            
+            var labels = Object.keys(dataObj);
+
+            //console.log(labels)
+            const dataset = labels.map(label => {
+                const values = dataObj[label].sort((a, b) => a - b);
+                return {
+                    min: Math.min(...values),
+                    q1: values[Math.floor(values.length * 0.25)],
+                    median: values[Math.floor(values.length * 0.5)],
+                    q3: values[Math.floor(values.length * 0.75)],
+                    max: Math.max(...values)
+                };
+            });
+            
+            const data = {
+                labels: ['GRAIN', 'ANTHERS', 'SEEDLINGS', 'FLORETS', 'PANICLE', 'LEAF', 'ROOT', 'STEM'],
+                datasets: [{
+                    label: 'Expression Levels',
+                    data: dataset,
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            };
+            
+            new Chart(ctx, {
+                type: 'boxplot',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Expression Boxplot Visualization' }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Sample Groups' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Expression Levels' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        function renderNetwork(networkData, nodesData) {
+            const cy = cytoscape({
+                container: document.getElementById('network-container'),
+                elements: {
+                    nodes: nodesData,
+                    edges: networkData
+                },
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'label': 'data(id)',
+                            'background-color': '#4a4a4a', // Default node color
+                            'color': '#000000',
+                            'text-valign': 'top',
+                            'text-halign': 'center',
+                            'text-margin-y': -5,
+                            'width': 'mapData(mutualRank, 1, 5, 30, 60)',
+                            'height': 'mapData(mutualRank, 1, 5, 30, 60)',
+                            'border-width': 2,
+                            'border-color': '#FFFFFF',
+                            'font-size': 12,
+                            'font-weight': 'bold'
+                        }
+                    },
+                    {
+                        selector: 'node[isQuery = "true"]', // Assuming your query node has isQuery=true in its data
+                        style: {
+                            'background-color': '#FF5722', // Orange color for query node
+                            'border-color': '#FFEB3B', // Yellow border for query node
+                            'border-width': 3,
+                            'width': 60, // Slightly larger
+                            'height': 60
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'line-color': '#dcb24b',
+                            'curve-style': 'bezier',
+                            'target-arrow-color': '#9E9E9E',
+                            'arrow-scale': 1.5,
+                            'line-style': 'solid',
+                            'width': 'mapData(mutualRank, 1, 5, 2, 8)',
+                            'line-opacity': 0.8,
+                            'shadow-blur': 5,
+                            'shadow-color': '#333',
+                            'shadow-offset-x': 1,
+                            'shadow-offset-y': 1
+                        }
+                    },
+                    {
+                        selector: 'edge[source = "query"]', // If edges from query node are marked
+                        style: {
+                            'line-color': '#FF5722',
+                            'target-arrow-color': '#FF5722'
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'cose',
+                    animate: true,
+                    fit: true,
+                    padding: 30,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 100,
+                    gravity: 0.25
+                }
+            });
+
+            cy.on('mouseover', 'edge', function (event) {
+                const edge = event.target;
+                const mutualRank = edge.data('mutualRank');
+
+                edge.style({
+                    'label': `MR: ${mutualRank}`,
+                    'font-size': '10px',
+                    'text-rotation': 'autorotate',
+                    'color': '#000',
+                    'text-background-opacity': 1,
+                    'text-background-color': '#ffffff',
+                    'text-background-padding': 2,
+                    'text-border-opacity': 1,
+                    'text-border-color': '#dcb24b',
+                    'text-border-width': 0.5
+                });
+            });
+
+
+            cy.on('mouseout', 'edge', function (event) {
+                const edge = event.target;
+
+                edge.style({
+                    'label': '',
+                    'line-color': '#dcb24b',
+                    'target-arrow-color': '#dcb24b',
+                    'width': edge.data('mutualRank') + 5,
+                    'transition-property': 'line-color, width, label',
+                    'transition-duration': '0.3s'
+                });
+            });
+
+            // Fit the graph to the container after rendering
+            cy.fit();
+        }
+        // filter rank data
+        // Filter function (modified from previous)
+        function filterByMutualRank(networkData, nodesData, maxRank) {
+            // Filter edges by mutual rank
+            const filteredEdges = networkData.filter(edge => 
+                edge.data.mutualRank <= maxRank
+            );
+
+            // Get connected nodes
+            const nodeIds = new Set();
+            filteredEdges.forEach(edge => {
+                nodeIds.add(edge.data.source);
+                nodeIds.add(edge.data.target);
+            });
+
+            // Filter nodes
+            const filteredNodes = nodesData.filter(node => 
+                nodeIds.has(node.data.id)
+            );
+
+            return {
+                nodes: filteredNodes,
+                edges: filteredEdges
+            };
+        }
+
+    </script>
+</body>
+</html>

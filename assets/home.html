@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Form</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Interactive Dashboard</h1>
+    <p>Your platform for managing data inputs and outputs</p>
+  </header>
+
+  <main class="container">
+    <section class="form-section">
+      <h2>Input Form</h2>
+      <form id="dashboardForm">
+        <div class="form-group">
+          <label for="singleInput">Single Value Input:</label>
+          <input type="text" id="singleInput" name="singleValue" placeholder="Enter a single value">
+        </div>
+
+        <div class="form-group">
+          <label for="multipleInput">Multiple Values (comma-separated):</label>
+          <textarea id="multipleInput" name="multipleValues" placeholder="Enter multiple values"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit</button>
+      </form>
+    </section>
+
+    <section class="result-section">
+      <h2>Form Results</h2>
+      <div id="resultOutput">
+        <p>No results to display yet. Fill the form and click Submit!</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Interactive Dashboard. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

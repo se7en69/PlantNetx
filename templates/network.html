@@ -1,0 +1,843 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RiceNetX - Rice networks explorer </title>
+    <link rel="stylesheet" href="{% static 'network.css' %}">
+    <link rel="icon" href="{% static 'fav.png' %}" type="image/png">
+    <!-- Include Cytoscape.js for network visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+	<script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-bundle.min.js"></script>
+    <script src="https://unpkg.com/layout-base/layout-base.js"></script>
+    <script src="https://unpkg.com/cose-base/cose-base.js"></script>
+    <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="{% static 'network.js' %}"></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    }
+
+    body {
+        background-color: #f5f5f5;
+        min-height: 100vh;
+    }
+
+    .container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .search-sidebar {
+        width: 300px;
+        background-color: #4a4a4a;
+        color: white;
+        padding: 20px;
+        height: 100vh; /* Full viewport height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        position: sticky; /* Keep the sidebar fixed while scrolling */
+        top: 0; /* Stick to the top */
+    }
+
+    .search-sidebar h2 {
+        color: #C8DBCE;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #666;
+        font-size: 1.5em;
+    }
+
+    .search-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .tab {
+        padding: 12px 20px;
+        background-color: #666;
+        color: white;
+        cursor: pointer;
+        text-decoration: none;
+        flex: 1;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .tab:hover {
+        background-color: #777;
+    }
+
+    .tab.active {
+        background-color: #C8DBCE;
+        color: black;
+        font-weight: bold;
+    }
+
+    .search-form {
+        margin-bottom: 20px;
+    }
+
+    .search-form label {
+        display: block;
+        margin-bottom: 10px;
+        color: white;
+        font-size: 0.9em;
+    }
+
+    textarea {
+        width: 100%;
+        height: 200px;
+        margin: 10px 0;
+        padding: 10px;
+        font-family: monospace;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        resize: vertical;
+    }
+
+    .search-form button {
+        padding: 10px 25px;
+        background-color: #C8DBCE;
+        color: black;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+        font-weight: bold;
+        transition: background-color 0.3s;
+    }
+
+    .search-form button:hover {
+        background-color: #C8DBCE;
+    }
+
+    .example-link {
+        color: #C8DBCE;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 15px;
+    }
+
+    .example-link:hover {
+        text-decoration: underline;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        background-color: white;
+    }
+
+    .gene-set {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .gene-set h1 {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        font-size: 2em;
+        color: #333;
+    }
+
+    .gene-table {
+        width: 100%;
+        height: 20%;
+        border-collapse: collapse;
+        margin: 40px 0;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .gene-table th,
+    .gene-table td {
+        padding: 3px 10px;
+        border: 0px solid #ddd;
+        text-align: left;
+    }
+
+    .gene-table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .gene-table tr:nth-child(even) {
+        background-color: #fff8dc;
+    }
+
+    .gene-table tr:hover {
+        background-color: #f0f0f0;
+    }
+
+    .tab-buttons {
+        display: flex;
+        margin: 20px 0;
+        border-bottom: 1px solid #ddd;
+        gap: 5px;
+    }
+
+    .tab-button {
+        padding: 10px 20px;
+        background: #f5f5f5;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px 4px 0 0;
+        transition: all 0.3s ease;
+    }
+
+    .tab-button:hover {
+        background: #e0e0e0;
+    }
+
+    .tab-button.active {
+        background: #C8DBCE;
+        font-weight: bold;
+    }
+
+    .download-button,
+    .network-button {
+        padding: 12px 25px;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+        font-size: 0.9em;
+    }
+
+    .download-button {
+        background: #4a4a4a;
+        color: white;
+    }
+
+    .download-button:hover {
+        background: #333;
+    }
+
+    .network-button {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+    }
+
+    .network-button:hover {
+        background: #e0e0e0;
+    }
+
+    .section-title {
+        margin: 30px 0 15px;
+        color: #333;
+        font-size: 1.5em;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        background-color: white;
+    }
+
+    .getting-started {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .getting-started h1 {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        font-size: 2em;
+        color: #333;
+    }
+
+    .info-icon {
+        width: 42px;
+        height: 42px;
+        background-color: #666;
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-style: italic;
+    }
+
+    .architecture-diagram {
+        border: 1px solid #ddd;
+        padding: 30px;
+        margin-top: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .architecture-diagram h2 {
+        margin-bottom: 25px;
+        color: #333;
+        font-size: 1.5em;
+    }
+
+    .diagram-content {
+        border: 2px solid #C8DBCE;
+        padding: 25px;
+        border-radius: 6px;
+    }
+
+    .diagram-row {
+        display: flex;
+        margin-bottom: 25px;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .diagram-box {
+        border: 1px solid #ddd;
+        padding: 15px;
+        flex: 1;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .diagram-box h3 {
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 1.1em;
+    }
+
+    .diagram-box div {
+        color: #666;
+        margin: 5px 0;
+        font-size: 0.9em;
+    }
+
+    .arrow {
+        text-align: center;
+        color: #C8DBCE;
+        font-size: 24px;
+        margin: 15px 0;
+    }
+    #cy {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #ddd;
+        margin-top: 20px;
+        background-color: #f9f9f9;
+    }
+    #heatmap-container {
+        width: 100%;
+        height: 500px;
+        margin-top: 20px;
+    }
+    .header {
+        background-color: #C8DBCE;
+        width: 100%;
+        height: 100px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        }
+
+        .header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        }
+
+        .header-logo {
+        width: auto;
+        height: 200px;
+        margin-right: 10px; /* Add some spacing between logo and text */
+        }
+
+        .header h1 {
+        color: white;
+        font-size: 2.5em;
+        }
+
+        .header-dots {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+        z-index: 1;
+        }
+
+        .subheader {
+        background-color: #666;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .results-table th, .results-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #4a4a4a 0%, #666 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .results-table th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        .results-table th:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        .results-table td {
+            background: white;
+            color: #333;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .results-table tr:hover td {
+            background: #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Alternating row colors for better readability */
+        .results-table tbody tr:nth-child(even) td {
+            background: #fafbfc;
+        }
+
+        .results-table tbody tr:nth-child(even):hover td {
+            background: #f0f2f5;
+        }
+
+        /* Link styling within tables */
+        .results-table a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .results-table a:hover {
+            color: #0052a3;
+            text-decoration: underline;
+        }
+
+        /* Table container styling */
+        .table-container {
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced table styling */
+        .results-table caption {
+            caption-side: top;
+            text-align: left;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 10px 0;
+        }
+
+        /* Better spacing for table sections */
+        .diagram-box .results-table {
+            margin-top: 15px;
+        }
+
+        /* Improved table header styling */
+        .results-table thead {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table row transitions */
+        .results-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        /* Better focus states for accessibility */
+        .results-table tbody tr:focus-within {
+            outline: 2px solid #C8DBCE;
+            outline-offset: 2px;
+        }
+
+        /* Download button styling */
+        .download-btn {
+            background: linear-gradient(135deg, #4a4a4a 0%, #666 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            margin: 15px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive table styles */
+        @media (max-width: 768px) {
+            .results-table {
+                font-size: 0.8em;
+            }
+            
+            .results-table th, .results-table td {
+                padding: 8px 10px;
+            }
+            
+            .results-table {
+                overflow-x: auto;
+                display: block;
+            }
+            
+            .results-table thead, .results-table tbody, .results-table tr, .results-table th, .results-table td {
+                display: block;
+            }
+            
+            .results-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            .results-table tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                border-radius: 4px;
+            }
+            
+            .results-table td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: left;
+            }
+            
+            .results-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: 45%;
+                font-weight: bold;
+                color: #666;
+            }
+        }
+    #network-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            display: none;
+        }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .getting-started {
+            max-width: 95%;
+        }
+        
+        .diagram-row {
+            gap: 15px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .search-sidebar {
+            width: 100%;
+            height: auto;
+            position: static;
+            order: 2;
+        }
+
+        .main-content {
+            order: 1;
+            padding: 20px;
+        }
+
+        .diagram-row {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .diagram-box {
+            margin-bottom: 10px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .search-tabs {
+            flex-direction: column;
+        }
+
+        .tab {
+            margin-bottom: 2px;
+        }
+
+        .tab-buttons {
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .getting-started h1 {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .architecture-diagram {
+            padding: 20px;
+        }
+
+        .diagram-content {
+            padding: 15px;
+        }
+
+        .gene-set h1 {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .search-sidebar {
+            padding: 15px;
+        }
+
+        .main-content {
+            padding: 15px;
+        }
+
+        .getting-started h1 {
+            font-size: 1.5em;
+        }
+
+        .info-icon {
+            width: 35px;
+            height: 35px;
+        }
+
+        .architecture-diagram {
+            padding: 15px;
+        }
+
+        .diagram-content {
+            padding: 10px;
+        }
+
+        .diagram-box {
+            padding: 10px;
+        }
+
+        .diagram-box h3 {
+            font-size: 1em;
+        }
+
+        .diagram-box div {
+            font-size: 0.8em;
+        }
+
+        .arrow {
+            font-size: 20px;
+        }
+
+        .search-form button {
+            width: 100%;
+            float: none;
+            margin-top: 10px;
+        }
+
+        .tab-button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .download-button,
+        .network-button {
+            padding: 10px 20px;
+            font-size: 0.8em;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header {
+            height: auto;
+            padding: 15px;
+        }
+
+        .header-logo {
+            height: 60px;
+        }
+
+        .getting-started h1 {
+            font-size: 1.3em;
+        }
+
+        .architecture-diagram {
+            padding: 10px;
+        }
+
+        .diagram-content {
+            padding: 8px;
+        }
+
+        .diagram-box {
+            padding: 8px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-dots"></div>
+        <div class="header-content">
+            <a href="/">
+                <img src="{% static 'logo.png' %}" alt="" class="header-logo">
+            </a>
+        </div>
+    </header>
+    <div class="container">
+        <aside class="search-sidebar">
+            <h2>MULTIPLE GENES</h2>
+            <div class="search-tabs">
+                <a href="/sgsearch" class="tab">SINGLE GENE</a>
+                <a href="/mgsearch" class="tab active">MULTIPLE GENES</a>
+            </div>
+            <form id="multi-gene-form">
+                <div class="search-form">
+                    <label>Enter gene IDs, one on each row, maximum 25 genes:</label>
+                    <textarea name="genes-out" id="genes-input"></textarea>
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+            <h2>RESULTS</h2>
+            <div class="result-buttons hidden"> <!-- Add hidden class initially -->
+                <button class="result-btn active" data-section="basic-info" onClick='window.location="#basic"'>Basic Info</button>
+                <button class="result-btn" data-section="expression" onClick='window.location="#expression"'>Expression</button>
+                <button class="result-btn" data-section="network" onclick="toggleDiv('network')">Co-expression Network</button>
+                <button class="result-btn" data-section="coexpressed" onclick="toggleDiv('mrank')">Mutual Rank</button>
+            </div>
+        </aside>
+
+        <main class="main-content" id="main-content">
+            <section class="getting-started">
+                <h1>
+                    <span class="info-icon">i</span>
+                    Basic Information
+                </h1>
+                
+                <div class="architecture-diagram" id="architecture-diagram">
+                    <h2>INFORMATION ARCHITECTURE</h2>
+                    <div class="diagram-content">
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>SEARCH</h3>
+                                <div>Single gene</div>
+                                <div>Multiple genes</div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>DATA TABLE</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Basic information</h3>
+                                <div>Expression overview</div>
+                                <div>Top co-expressed genes</div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>EXPRESSION</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Scatter plot for the expression of the two selected genes</h3>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="diagram-row">
+                            <div class="diagram-box">
+                                <h3>NETWORK</h3>
+                            </div>
+                            <div class="diagram-box">
+                                <h3>Co-expression network of the selected gene</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{% static 'network.js' %}"></script>
+</body>
+</html>

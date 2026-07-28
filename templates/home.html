@@ -1,0 +1,754 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantNetX - networks explorer </title>
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+    <link rel="icon" href="{% static 'fav.png' %}" type="image/png">
+    <style>
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+        }
+
+        body {
+        background-color: #f5f5f5;
+        min-height: 100vh;
+        }
+        .wrapper {
+        max-width: 1300px;
+        margin: 0 auto;
+        }
+        .header {
+        background-color: #C8DBCE;
+        width: 100%;
+        height: 100px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        }
+
+        .header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center; /* Vertically center items */
+        justify-content: space-between; /* Space between logo and h3 */
+        height: 100%;
+        }
+
+        .header-logo {
+        width: auto;
+        height: 200px;
+        margin-right: 10px; /* Add some spacing between logo and text */
+        }
+
+        .header-title {
+        color: rgb(251, 246, 246);
+        font-size: 1em; /* Adjust font size as needed */
+        text-align: right; /* Align text to the right */
+        flex: 1; /* Allow the h3 to take remaining space */
+        margin: 0; /* Remove default margin */
+        }
+
+        .header-dots {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+        z-index: 1;
+        }
+
+        .subheader {
+        background-color: #666;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        }
+
+        .container {
+        display: flex;
+        min-height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+        width: 350px;
+        background-color: #e0e0e0;
+        padding: 20px;
+        }
+
+        .sidebar h3 {
+        margin: 20px 0 10px;
+        color: #333;
+        font-size: 1.1em;
+        }
+
+        .sidebar ul {
+        list-style: none;
+        }
+
+        .sidebar li {
+        margin: 10px 0;
+        }
+
+        .sidebar a {
+        text-decoration: none;
+        color: #333;
+        transition: color 0.3s;
+        }
+
+        .sidebar a:hover {
+        color: #0066cc;
+        }
+
+        .ricexpro-button {
+        background-color: #9b8ee0;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: inline-block;
+        margin: 10px 0;
+        transition: background-color 0.3s;
+        }
+
+        .ricexpro-button:hover {
+        background-color: #8a7cd0;
+        }
+
+        .main-content {
+        flex: 1;
+        padding: 40px;
+        background-color: #C8DBCE;
+        }
+
+        .overview {
+        margin-bottom: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        }
+
+        .overview h2 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        }
+        .overview_guide {
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Needed for absolute positioning of h2 */
+        }
+
+        .overview_guide img {
+            height: 400px;
+            width: auto;
+            max-width: 100%; /* Prevents image from overflowing container */
+        }
+        .overview_guide h2 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 10px; /* Optional spacing */
+        }
+
+        .overview p {
+        line-height: 1.6;
+        color: #444;
+        }
+
+        .search-section {
+        margin-top: 40px;
+        }
+
+        .search-section h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.8em;
+        }
+
+        .search-cards {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        }
+
+        .search-card {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        width: 45%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .search-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .search-card h3 {
+        margin-bottom: 15px;
+        color: #333;
+        font-size: 1.4em;
+        }
+
+        .search-card p {
+        color: #666;
+        line-height: 1.5;
+        }
+
+        .version {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+        color: #333;
+        font-weight: bold;
+        }
+
+        a {
+        color: #0066cc;
+        }
+
+        a:hover {
+        text-decoration: underline;
+        }
+
+        .navmenu {
+            width: 100%;
+            background: #303030;
+            display: none;
+            padding: 0;
+            margin: 0;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .navmenu.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .species-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px auto;
+        }
+
+        .species-btn {
+            border: none;
+            padding: 12px 28px;
+            background-color: #4d735f;
+            color: #fff;
+            font-size: 1rem;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .species-btn:hover {
+            background-color: #3a5646;
+            transform: translateY(-2px);
+        }
+
+        .species-btn.active {
+            background-color: #2f8a5a;
+        }
+        
+        #menu {
+            color: #fff;
+            font-size: 18px;
+            position: relative;
+            top: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            padding-left: 10px;
+            display: none; /* Hide hamburger menu on desktop */
+        }
+        
+        #menu a {
+            text-decoration: none;
+        }
+        
+        nav {
+            display: block;
+            padding: 0;
+            margin: 0;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            padding-left: 0;
+            font-size: 0;
+            background-color: #303030;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        
+        nav li {
+            display: inline-block;
+            font-size: 16px;
+            color: white;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+        
+        ul.navbar>li>a {
+            color: #fff;
+        }
+        
+        nav a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+        
+        .sub-menu li {
+            list-style-type: none;
+            display: block;
+        }
+        
+        ul.navbar li ul.sub-menu {
+            display: none;
+            position: absolute;
+            background: #444;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        
+        ul.navbar li {
+            position: relative;
+        }
+        
+        ul.navbar li:hover ul.sub-menu {
+            display: block;
+        }
+        
+        .sub-menu li {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+        
+        ul.sub-menu>li>a {
+            color: #fff;
+            padding: 8px 15px;
+        }
+        
+        ul.navbar>li>a:hover,
+        ul.sub-menu>li>a:hover {
+            color: #66a992;
+        }
+
+            /* Responsive Design */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        .coming-soon-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 101;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            display: none;
+        }
+
+        .coming-soon-modal.active {
+            display: block;
+        }
+
+        .coming-soon-modal h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .coming-soon-modal p {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .modal-close-btn {
+            border: none;
+            background: #4d735f;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .modal-close-btn:hover {
+            background: #3a5646;
+        }
+
+            @media (max-width: 1200px) {
+            .wrapper {
+                max-width: 95%;
+                margin: 0 auto;
+            }
+        }
+
+                        @media (max-width: 768px) {
+            .navmenu {
+                position: relative;
+            }
+
+            #menu {
+                display: block;
+            }
+
+            #navbar {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: #303030;
+                z-index: 1000;
+            }
+
+            #navbar.active {
+                display: block;
+            }
+
+            nav ul {
+                width: 100% !important;
+                text-align: left;
+            }
+
+            nav li {
+                display: block;
+                margin: 0;
+                border-bottom: 1px solid #444;
+            }
+
+            nav a {
+                padding: 15px 10px;
+            }
+
+            ul.navbar li ul.sub-menu {
+                position: static;
+                background: #444;
+                box-shadow: none;
+                border: none;
+            }
+
+            .sub-menu li {
+                width: 100%;
+                display: block;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+        .sidebar {
+            width: 100%;
+            order: 2;
+        }
+
+        .main-content {
+            order: 1;
+            padding: 20px;
+        }
+
+        .search-cards {
+            flex-direction: column;
+        }
+
+        .search-card {
+            width: 100%;
+        }
+
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .overview_guide {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .overview_guide h2 {
+            position: static;
+            margin-bottom: 15px;
+        }
+
+        .overview_guide img {
+            height: 300px;
+        }
+
+        .navmenu {
+            position: relative;
+        }
+
+        #menu {
+            display: block;
+        }
+
+        #navbar {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #303030;
+            z-index: 1000;
+        }
+
+        #navbar.active {
+            display: block;
+        }
+
+        nav ul {
+            width: 100% !important;
+        }
+
+        nav li {
+            display: block;
+            margin: 0;
+            border-bottom: 1px solid #444;
+        }
+
+        nav a {
+            padding: 15px 10px;
+        }
+
+        ul.navbar li ul.sub-menu {
+            position: static;
+            background: #444;
+        }
+
+        .sub-menu li {
+            width: 100%;
+            display: block;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .wrapper {
+            max-width: 100%;
+            padding: 0 10px;
+        }
+
+        .header {
+            height: auto;
+            padding: 15px;
+        }
+
+        .header-logo {
+            height: 60px;
+        }
+
+        .header-title {
+            font-size: 0.8em;
+        }
+
+        .main-content {
+            padding: 15px;
+        }
+
+        .overview, .overview_guide {
+            padding: 15px;
+        }
+
+        .overview h2, .overview_guide h2 {
+            font-size: 1.5em;
+        }
+
+        .overview_guide img {
+            height: 250px;
+        }
+
+        .search-section h2 {
+            font-size: 1.5em;
+        }
+
+        .search-card {
+            padding: 20px;
+        }
+
+        .search-card h3 {
+            font-size: 1.2em;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header-content {
+            gap: 5px;
+        }
+
+        .header-logo {
+            height: 50px;
+        }
+
+        .header-title {
+            font-size: 0.7em;
+        }
+
+        .overview_guide img {
+            height: 200px;
+        }
+
+        .search-card {
+            padding: 15px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <header class="header">
+            <div class="header-dots"></div>
+            <div class="header-content">
+              <img src="{% static 'logo.png' %}" alt="" class="header-logo">
+              <h3 class="header-title">Functional and gene Co-Expressed Network Database</h3>
+            </div>
+          </header>
+        <div class="species-selector">
+            <button id="riceBtn" class="species-btn">Rice</button>
+            <button id="arabidopsisBtn" class="species-btn">Arabidopsis</button>
+        </div>
+        <div class='content-wrapper'>
+            <div class='navmenu'>
+               <span id='menu'><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC9JREFUeNpi/P//PwM1AQsQU9VEJgYqg8FvICgMGUeel0eTzWiyGU02Qz/ZAAQYAOPcBjEdYroKAAAAAElFTkSuQmCC'  /></span>
+               <nav id='navbar' itemprop='mainEntity' itemscope='itemscope' itemtype='https://schema.org/SiteNavigationElement'>
+                  <ul class='navbar'>
+                     <li><a href='/' itemprop='url' title='Home'><span itemprop='name'>Home</span></a></li>
+                     <li><a href='/guide' itemprop='url' title='Quick Guide'><span itemprop='name'>Quick Guide</span></a></li>
+                     <li id='sub-menu'>
+                        <span itemprop='name'>Search</span>
+                        <ul class="sub-menu">
+                           <li><a href='/sgsearch' itemprop='url' title='Single Gene'><span itemprop='name'>Single Gene</span></a></li>
+                           <li><a href='/mgsearch' itemprop='url' title='Multiple Genes'><span itemprop='name'>Multiple Genes</span></a></li>
+                        </ul>
+                     </li>
+                     <li><a href='#data-source' itemprop='url' title='Data Source'><span itemprop='name'>Data Source</span></a></li>
+                     <li><a href='/contact' itemprop='url' title='Contact Us'><span itemprop='name'>Contact Us</span></a></li>
+                  </ul>
+               </nav>
+            </div>
+         </div>
+         <div style='clear: both;'/>
+    
+        <div class="container">
+            <main class="main-content">
+                <section class="overview">
+                    <h2>Overview</h2>
+                    <p>PlantNetX is a comprehensive gene expression database in rice, built upon an extensive collection of RNA-Seq data derived from various tissues and organs at different stages of growth and development under natural field conditions, as well as rice plants subjected to various treatments. The RNA-Seq data utilized for coexpression analysis is accessible within PlantNetX, a repository of gene expression profiles obtained through RNA sequencing. PlantNetX aims to provide a robust platform for the identification of functionally related genes in diverse biological pathways and/or metabolic processes.</p>
+                </section>
+    
+                <section class="search-section">
+                    <section class="overview_guide", style="align-items: center;">
+                        <h2>Workflow</h2>
+                        <img src="https://i.postimg.cc/DZn1Wvrj/PlantNetX.png" alt="" class="header-logo">
+                    </section>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="comingSoonOverlay" class="modal-overlay"></div>
+    <div id="comingSoonModal" class="coming-soon-modal" role="dialog" aria-modal="true" aria-labelledby="comingSoonTitle" aria-describedby="comingSoonMessage">
+        <h3 id="comingSoonTitle">Arabidopsis Support</h3>
+        <p id="comingSoonMessage">Coming soon. Stay tuned!</p>
+        <button id="comingSoonClose" class="modal-close-btn">Close</button>
+    </div>
+
+    <script>
+        const navMenuWrapper = document.querySelector('.navmenu');
+        const riceBtn = document.getElementById('riceBtn');
+        const arabidopsisBtn = document.getElementById('arabidopsisBtn');
+        const comingSoonModal = document.getElementById('comingSoonModal');
+        const comingSoonOverlay = document.getElementById('comingSoonOverlay');
+        const comingSoonClose = document.getElementById('comingSoonClose');
+
+        const openModal = () => {
+            comingSoonModal.classList.add('active');
+            comingSoonOverlay.classList.add('active');
+        };
+
+        const closeModal = () => {
+            comingSoonModal.classList.remove('active');
+            comingSoonOverlay.classList.remove('active');
+        };
+
+        riceBtn.addEventListener('click', () => {
+            navMenuWrapper.classList.add('visible');
+            riceBtn.classList.add('active');
+            arabidopsisBtn.classList.remove('active');
+        });
+
+        arabidopsisBtn.addEventListener('click', () => {
+            arabidopsisBtn.classList.add('active');
+            riceBtn.classList.remove('active');
+            openModal();
+        });
+
+        comingSoonClose.addEventListener('click', closeModal);
+        comingSoonOverlay.addEventListener('click', closeModal);
+
+        // Mobile menu toggle
+        document.getElementById('menu').addEventListener('click', function() {
+            const navbar = document.getElementById('navbar');
+            navbar.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.getElementById('navbar');
+            const menu = document.getElementById('menu');
+            
+            if (!navbar.contains(event.target) && !menu.contains(event.target)) {
+                navbar.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

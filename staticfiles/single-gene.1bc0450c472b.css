@@ -1,0 +1,254 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    line-height: 1.6;
+    color: #333;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.search-sidebar {
+    width: 300px;
+    background-color: #4a4a4a;
+    color: white;
+    padding: 20px;
+}
+
+.search-sidebar h2 {
+    color: #ffd700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #666;
+    font-size: 1.5em;
+}
+
+.search-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.tab {
+    padding: 12px 20px;
+    background-color: #666;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    flex: 1;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 0.9em;
+}
+
+.tab:hover {
+    background-color: #777;
+}
+
+.tab.active {
+    background-color: #ffd700;
+    color: black;
+    font-weight: bold;
+}
+
+.search-form {
+    margin-bottom: 20px;
+}
+
+.search-form label {
+    display: block;
+    margin-bottom: 10px;
+    color: white;
+    font-size: 0.9em;
+}
+
+.search-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.search-form button {
+    padding: 10px 25px;
+    background-color: #ffd700;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.search-form button:hover {
+    background-color: #ffed4a;
+}
+
+.example-link {
+    color: #ffd700;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.example-link:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    flex: 1;
+    padding: 40px;
+    background-color: white;
+}
+
+.getting-started {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.getting-started h1 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    font-size: 2em;
+    color: #333;
+}
+
+.info-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #666;
+    color: white;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
+}
+
+.architecture-diagram {
+    border: 1px solid #ddd;
+    padding: 30px;
+    margin-top: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.architecture-diagram h2 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.diagram-content {
+    border: 2px solid #ffd700;
+    padding: 25px;
+    border-radius: 6px;
+}
+
+.diagram-row {
+    display: flex;
+    margin-bottom: 25px;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.diagram-box {
+    border: 1px solid #ddd;
+    padding: 15px;
+    flex: 1;
+    background-color: #fff8dc;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.diagram-box h3 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.diagram-box div {
+    color: #666;
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.arrow {
+    text-align: center;
+    color: #ffd700;
+    font-size: 24px;
+    margin: 15px 0;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.results-table th, .results-table td {
+    padding: 3px 10px;
+    border: 0px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.results-table th {
+    background-color: #f2f2f2;
+}
+
+.boxplot {
+    width: 100%;
+    height: 200px;
+    background-color: #f0f0f0;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .search-sidebar {
+        width: 100%;
+    }
+
+    .diagram-row {
+        flex-direction: column;
+    }
+    .diagram-box {
+        width: 600px;
+        margin: auto;
+        text-align: center;
+    }
+    canvas {
+        max-width: 100%;
+    }
+}
+#cy {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+}
