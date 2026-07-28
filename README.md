@@ -1,5 +1,3 @@
-# 🌱 PlantNetX
-
 <p align="center">
   <img src="docs/images/plantnetx_logo.png" alt="PlantNetX Logo" width="180"/>
 </p>
